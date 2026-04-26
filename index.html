@@ -678,6 +678,106 @@
   </div>
 
 <script>
+    // ====== GAS API 設定 — 部署後替換成你的 GAS Web App URL ======
+    const GAS_API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+
+    // ====== GAS 跨網域呼叫 helper ======
+    async function callGAS(functionName, ...params) {
+        const response = await fetch(GAS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ functionName, parameters: params }),
+            mode: 'no-cors'  // GAS 不回應 CORS preflight，use no-cors
+        });
+        // no-cors 模式回應是 opaque — 我們依賴 GAS 的直接回傳（若失敗會進 catch）
+        return null; // 實際回應由 GAS 的 htmlOutput 處理，見下方說明
+    }
+
+    // ====== 使用 DO_GET 回傳 JSON 的 GAS 呼叫 ======
+    // 由於 GAS web app 的 exec URL 不支援 JSON response（含 CORS 限制），
+    // 需要改用 ?alternative=1 參數或包裝成 ScriptDiv.setScriptOutput。
+    // 這裡示範用 PUBLIC GAS URL 方式（建議改用 gas-wrapper.php 代理或 GAS ContentService）
+    // 若你希望純前端方案，可改用下方 sample 模式先看 UI。
+    const USE_SAMPLE_DATA = !GAS_API_URL.includes('YOUR_DEPLOYMENT_ID');
+
+    async function gasCall(functionName, ...params) {
+        if (USE_SAMPLE_DATA) {
+            return getSampleData(functionName);
+        }
+        // 使用 ContentService 部署的 URL（需在 GAS 中用 ContentService.createTextOutput）
+        const encoded = encodeURIComponent(JSON.stringify({ fn: functionName, params }));
+        const url = GAS_API_URL.replace('/exec', `/exec?data=${encoded}`);
+        try {
+            const resp = await fetch(url);
+            const text = await resp.text();
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('GAS call failed:', e);
+            throw e;
+        }
+    }
+
+    // 範例資料（未設定 GAS URL 時使用）
+    function getSampleData(fn) {
+        const sampleDates = ['2026-04-23','2026-04-17','2026-04-10','2026-04-03','2026-03-27'];
+        const sampleSubgroups = [
+            { name: '秋霞小C', partners: 12, newFriends: 0, total: 12, attendees: [
+                {name:'吳沂錚',type:'partner'},{name:'曹婷玉',type:'partner'},{name:'蔡丞和',type:'partner'},
+                {name:'黃秀清',type:'partner'},{name:'易珍珍',type:'partner'},{name:'吳慧芬',type:'partner'},
+                {name:'饒榮清',type:'partner'},{name:'黃千榕',type:'partner'},{name:'陳妁融',type:'partner'},
+                {name:'邱偉埕',type:'partner'},{name:'林素瑛',type:'partner'},{name:'周言棠',type:'partner'}
+            ]},
+            { name: '秋鳳小C', partners: 9, newFriends: 0, total: 9, attendees: [
+                {name:'姜秋鳳',type:'partner'},{name:'黃柏皓',type:'partner'},{name:'郭惠敏',type:'partner'},
+                {name:'林素瑛',type:'partner'},{name:'陳小芩',type:'partner'},{name:'董華正',type:'partner'},
+                {name:'陳妁融',type:'partner'},{name:'周言棠',type:'partner'},{name:'邱偉埕',type:'partner'}
+            ]},
+            { name: '姍謙小C', partners: 7, newFriends: 0, total: 7, attendees: [
+                {name:'白姍靈',type:'partner'},{name:'廖櫻庭',type:'partner'},{name:'陳姯妙',type:'partner'},
+                {name:'白浩廷',type:'partner'},{name:'白繐綺',type:'partner'},{name:'廖紋君',type:'partner'},
+                {name:'陳裕強',type:'partner'}
+            ]},
+            { name: '華正小C', partners: 4, newFriends: 0, total: 4, attendees: [
+                {name:'董華正',type:'partner'},{name:'温怡珺',type:'partner'},{name:'廖紋君',type:'partner'},
+                {name:'華正',type:'partner'}
+            ]},
+            { name: '昱旻小C', partners: 3, newFriends: 0, total: 3, attendees: [
+                {name:'吳昱旻',type:'partner'},{name:'廖櫻庭',type:'partner'},{name:'周茵茵',type:'partner'}
+            ]},
+            { name: '純惠小C', partners: 2, newFriends: 0, total: 2, attendees: [
+                {name:'黃千榕',type:'partner'},{name:'張志強',type:'partner'}
+            ]},
+        ];
+        const grandTotal = sampleSubgroups.reduce((s,g) => s + g.total, 0);
+        const totalPartners = sampleSubgroups.reduce((s,g) => s + g.partners, 0);
+        const totalNewFriends = sampleSubgroups.reduce((s,g) => s + g.newFriends, 0);
+
+        switch(fn) {
+            case 'getUniqueMeetingDates': return Promise.resolve(sampleDates);
+            case 'getAnalyticsData': return Promise.resolve({ totalPartners, totalNewFriends, grandTotal, subGroupData: sampleSubgroups });
+            case 'getComparisonData': return Promise.resolve({
+                currentPeriod: { grandTotal: 87, totalPartners: 87, totalNewFriends: 0, label: '本期週' },
+                previousPeriod: { grandTotal: 72, totalPartners: 72, totalNewFriends: 0, label: '上期週' },
+                growthRates: { grandTotal: 20.8, partner: 20.8, newFriend: null }
+            });
+            case 'getTrendAnalysisData': return Promise.resolve({
+                totalPartners: 87, totalNewFriends: 0, grandTotal: 87,
+                analysis: { partnerGrowthRate: 12.5, newFriendGrowthRate: null, averageAttendance: 43.5 },
+                trendData: {
+                    labels: ['3/28','4/4','4/11','4/18','4/25'],
+                    datasets: [{ label: '總出席人數', data: [38, 42, 39, 45, 41] }],
+                    subGroupDatasets: [
+                        { label: '秋霞小C', data: [8, 10, 9, 11, 10] },
+                        { label: '秋鳳小C', data: [7, 8, 7, 9, 8] },
+                        { label: '姍謙小C', data: [5, 6, 6, 7, 6] },
+                        { label: '昱旻小C', data: [4, 5, 4, 5, 5] },
+                    ]
+                }
+            });
+            default: return Promise.resolve({});
+        }
+    }
+
     let subgroupBarChart, totalTrendChart, subgroupTrendChart, comparisonChart;
     const chartColors = ['#3b82f6', '#ef4444', '#22c55e', '#f97316', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#d946ef'];
     Chart.register(ChartDataLabels);
@@ -697,10 +797,7 @@
 
     function fetchComparisonData(period) {
         showLoading();
-        google.script.run
-            .withSuccessHandler(updateComparisonTab)
-            .withFailureHandler(handleError)
-            .getComparisonData(period);
+        gasCall('getComparisonData', period).then(updateComparisonTab).catch(handleError);
     }
 
     function updateComparisonTab(data) {
@@ -874,10 +971,7 @@
             return;
         }
         showLoading();
-        google.script.run
-            .withSuccessHandler(data => updateDashboard(data, 'single'))
-            .withFailureHandler(handleError)
-            .getAnalyticsData(date, isInitial);
+        gasCall('getAnalyticsData', date, isInitial).then(data => updateDashboard(data, 'single')).catch(handleError);
     }
 
     function queryTrendData(isQuickSelect) {
@@ -895,10 +989,7 @@
         }
 
         showLoading();
-        google.script.run
-            .withSuccessHandler(data => updateDashboard(data, 'trend'))
-            .withFailureHandler(handleError)
-            .getTrendAnalysisData(startDate, endDate, isQuickSelect);
+        gasCall('getTrendAnalysisData', startDate, endDate, isQuickSelect).then(data => updateDashboard(data, 'trend')).catch(handleError);
     }
 
     function updateDashboard(data, type) {
@@ -1357,10 +1448,7 @@
         initQuickButtons();
         addTouchFeedback();
         
-        google.script.run
-            .withSuccessHandler(populateDateSelector)
-            .withFailureHandler(handleError)
-            .getUniqueMeetingDates();
+        gasCall('getUniqueMeetingDates').then(populateDateSelector).catch(handleError);
         
         document.getElementById('date-selector').addEventListener('change', e => fetchDataForDate(e.target.value, false));
         document.getElementById('query-range-btn').addEventListener('click', () => queryTrendData(false));
