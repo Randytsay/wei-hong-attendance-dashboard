@@ -11,1471 +11,908 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
-    /* --- 全局和基礎設定 --- */
-    * {
-        box-sizing: border-box;
-    }
-    
-    html {
-        -webkit-text-size-adjust: 100%;
-        box-sizing: border-box;
-        /* 步驟1: 設定桌面版根字體大小 (1rem = 16px) */
-        font-size: 16px;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; font-size: 16px; }
 
-    *, *:before, *:after {
-        box-sizing: inherit;
-    }
-    
-    body { 
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif; 
-        background-color: #f1f5f9; 
-        font-size: 1.125rem; /* 使用rem單位 */
-        -webkit-font-smoothing: antialiased;
-        line-height: 1.7;
-        margin: 0;
-        padding: 0;
-        overflow-x: hidden;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+      background: linear-gradient(135deg, #faf5ff 0%, #f8fafc 40%, #eff6ff 100%);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.7;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
 
     #main-content {
-        width: 100%;
-        max-width: 1280px;
-        margin-left: auto;
-        margin-right: auto;
-        padding: 1rem;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1rem;
     }
 
-    /* --- 元件樣式 (已轉換為 rem) --- */
-    .card { 
-        background-color: white; 
-        border-radius: 1rem; 
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06); 
-        transition: all 0.3s ease;
-        border: 1px solid #e2e8f0;
-        overflow: hidden;
-        width: 100%;
+    /* ─── 卡片 ─── */
+    .card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -1px rgb(0 0 0 / 0.04);
+      border: 1px solid #f1f5f9;
+      overflow: hidden;
+      width: 100%;
+      transition: all 0.3s ease;
     }
-    .card:hover { 
-        transform: translateY(-4px); 
-        box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05); 
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.08), 0 4px 6px -2px rgb(0 0 0 / 0.04);
     }
-    
+
+    /* ─── 按鈕 ─── */
     .mobile-btn {
-        min-height: 48px;
-        padding: 14px 20px;
-        font-size: 1.375rem; /* 17px / 16 */
-        font-weight: 600;
-        border-radius: 12px;
-        transition: all 0.2s;
-        touch-action: manipulation;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        width: 100%;
-    }
-    
-    .tab-container {
-        background: white;
-        border-radius: 1rem;
-        padding: 4px;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-        width: 100%;
-    }
-    
-    .tab-btn { 
-        padding: 14px 12px; 
-        cursor: pointer; 
-        border-radius: 0.75rem;
-        transition: all 0.3s; 
-        color: #64748b; 
-        font-size: 0.9375rem; /* 15px / 16 */
-        font-weight: 500;
-        min-height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        flex: 1;
-        position: relative;
-        background: transparent;
-    }
-    .tab-btn.active { 
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-        color: white; 
-        font-weight: 600; 
-        box-shadow: 0 4px 12px rgb(59 130 246 / 0.4);
-    }
-    
-    .mobile-table-redesign { display: none; }
-    .mobile-stats-card {
-        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-        border-left: 5px solid #3b82f6;
-        border-radius: 1rem;
-        padding: 1.25rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-        width: 100%;
-    }
-    .mobile-stats-card h3 {
-        font-size: 1.125rem; /* 18px / 16 */
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 0.75rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .mobile-stats-row {
-        display: flex;
-        font-size: 1.125rem;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    .mobile-stats-row:last-child {
-        border-bottom: none;
-        font-weight: 600;
-        background: #f1f5f9;
-        margin: 0.5rem -1.25rem -1.25rem;
-        padding: 1rem 1.25rem;
-        border-radius: 0 0 1rem 1rem;
-    }
-    
-    .quick-btn { 
-        background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-        color: #475569; 
-        font-weight: 600; 
-        padding: 12px 18px; 
-        border-radius: 1rem; 
-        transition: all 0.3s; 
-        font-size: 1rem; /* 15px / 16 */
-        min-height: 44px;
-        border: 2px solid #e2e8f0;
-        touch-action: manipulation;
-        box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
-        width: 100%;
-    }
-    .quick-btn.active { 
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-        color: white; 
-        border-color: #3b82f6;
-        box-shadow: 0 4px 12px rgb(59 130 246 / 0.4);
-        transform: translateY(-2px);
-    }
-    .quick-btn:hover:not(.active) { 
-        background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+      min-height: 48px;
+      padding: 14px 20px;
+      font-size: 1.0625rem;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: all 0.2s;
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      cursor: pointer;
     }
 
+    /* ─── 分頁 Tab ─── */
+    .tab-container {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 1rem;
+      padding: 4px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 16px rgb(139 92 246 / 0.12);
+      border: 1px solid rgb(139 92 246 / 0.1);
+      width: 100%;
+    }
+    .tab-btn {
+      padding: 14px 12px;
+      cursor: pointer;
+      border-radius: 0.75rem;
+      transition: all 0.3s;
+      color: #64748b;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex: 1;
+      background: transparent;
+      border: none;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #8b5cf6, #a855f7);
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgb(139 92 246 / 0.4);
+    }
+
+    /* ─── 統計卡 ─── */
     .stat-card {
-        background: white;
-        border-radius: 1.25rem;
-        padding: 1.5rem;
-        box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-        border: 1px solid #e2e8f0;
-        transition: all 0.3s;
-        position: relative;
-        overflow: hidden;
-        width: 100%;
+      background: white;
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.06);
+      border: 1px solid #f1f5f9;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
     }
     .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #8b5cf6, #a855f7, #ec4899);
     }
     .stat-card.primary {
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-        color: white;
+      background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+      color: white;
     }
-    .stat-card.primary::before { background: linear-gradient(90deg, #1e40af, #1e3a8a); }
+    .stat-card.primary::before { background: linear-gradient(90deg, #5b21b6, #7c3aed); }
     .stat-card h2 {
-        font-size: 1rem !important; 
-        font-weight: 600;
-        margin-bottom: 0.75rem;
-        opacity: 0.8;
+      font-size: 0.875rem !important;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      opacity: 0.85;
     }
     .stat-card .number {
-        font-size: 3rem !important;
-        font-weight: 800;
-        line-height: 1;
+      font-size: 3rem !important;
+      font-weight: 800;
+      line-height: 1;
     }
-    
+
+    /* ─── 快速按鈕 ─── */
+    .quick-btn {
+      background: white;
+      color: #64748b;
+      font-weight: 600;
+      padding: 12px 18px;
+      border-radius: 1rem;
+      transition: all 0.3s;
+      font-size: 1rem;
+      min-height: 44px;
+      border: 2px solid #f1f5f9;
+      touch-action: manipulation;
+      cursor: pointer;
+      width: 100%;
+    }
+    .quick-btn.active {
+      background: linear-gradient(135deg, #8b5cf6, #a855f7);
+      color: white;
+      border-color: #8b5cf6;
+      box-shadow: 0 4px 16px rgb(139 92 246 / 0.35);
+      transform: translateY(-2px);
+    }
+    .quick-btn:hover:not(.active) {
+      background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+      border-color: #c4b5fd;
+      transform: translateY(-1px);
+    }
+
+    /* ─── 輸入框 ─── */
     .mobile-input {
-        min-height: 50px;
-        font-size: 1.0625rem; /* 17px / 16 */
-        padding: 14px 16px;
-        border-radius: 1rem;
-        border: 2px solid #e2e8f0;
-        transition: all 0.3s;
-        background: white;
-        box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
-        width: 100%;
+      min-height: 50px;
+      font-size: 1.0625rem;
+      padding: 14px 16px;
+      border-radius: 1rem;
+      border: 2px solid #f1f5f9;
+      transition: all 0.3s;
+      background: white;
+      width: 100%;
     }
     .mobile-input:focus {
-        border-color: #3b82f6;
-        outline: none;
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 4px 12px rgb(0 0 0 / 0.1);
-        transform: translateY(-1px);
+      border-color: #8b5cf6;
+      outline: none;
+      box-shadow: 0 0 0 4px rgb(139 92 246 / 0.1);
+      transform: translateY(-1px);
     }
 
-    /* --- 動畫與覆蓋層 --- */
-    .loader { 
-        border: 4px solid #f1f5f9; 
-        border-radius: 50%; 
-        border-top: 4px solid #3b82f6; 
-        width: 48px; height: 48px; 
-        animation: spin 1s linear infinite; 
+    /* ─── 動畫 ─── */
+    .loader {
+      border: 4px solid #f1f5f9;
+      border-top: 4px solid #8b5cf6;
+      border-radius: 50%;
+      width: 48px; height: 48px;
+      animation: spin 1s linear infinite;
     }
-    @keyframes spin { 
-        0% { transform: rotate(0deg); } 
-        100% { transform: rotate(360deg); } 
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    #loading-overlay {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, rgba(250,245,255,0.97), rgba(248,250,252,0.98));
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.3s;
     }
-    #loading-overlay { 
-        position: fixed; top: 0; left: 0; 
-        width: 100%; height: 100%; 
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.98));
-        backdrop-filter: blur(8px);
-        display: flex; 
-        justify-content: center; 
-        align-items: center; 
-        z-index: 9999; 
-        transition: opacity 0.3s; 
-    }
-    .tab-content { 
-        padding: 1rem; display: none; width: 100%; box-sizing: border-box;
-    }
+    .tab-content { padding: 1rem; display: none; width: 100%; box-sizing: border-box; }
     .tab-content.active { display: block; animation: slideIn 0.4s ease-out; }
-    @keyframes slideIn { 
-        from { opacity: 0; transform: translateY(20px); } 
-        to { opacity: 1; transform: translateY(0); } 
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* --- 佈局與網格 --- */
+    /* ─── 佈局 ─── */
     .stats-grid { display: grid; width: 100%; gap: 1rem; }
     .quick-buttons-container { display: grid; width: 100%; gap: 0.75rem; }
-    
-    /* --- 移動端響應式樣式 --- */
+
+    /* ─── 手機版 ─── */
     @media (max-width: 768px) {
-        /* 步驟2: 為移動端放大根字體 (1rem = 18px, 或您覺得舒適的大小) */
-        html {
-            font-size: 28px; 
-        }
-      @media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 3dppx) {
-          html {
-              font-size: 30px; /* 高密度螢幕稍微放大 */
-          }
-      }
-        body {
-            /*font-size: 5vw; */
-            font-size: 1rem;
-            background: #f8fafc;
-            overflow-x: hidden;
-            width: 100vw;
-            line-height: 1.6;
-        }
-        #main-content { padding: 0.5rem; }
-        .container { padding: 0; width: 100%; max-width: 100vw; }
-        .tab-content { padding: 0.75rem; display: none; }          
-        
-        .mobile-header {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 0 0 1.5rem 1.5rem;
-            margin: 0 0 1.5rem 0;
-            box-shadow: 0 4px 12px rgb(59 130 246 / 0.3);
-            width: 100%;
-        }
-        .mobile-header h1 {
-            font-size: 1.75rem; /* 調整為rem */
-            font-weight: 900 !important;
-            margin-bottom: 0.5rem;
-        }
-        .mobile-header p {
-            opacity: 0.9;
-            font-size: 1rem !important;
-        }
-        
-        .desktop-table { display: none !important; }
-        .mobile-table-redesign { display: block !important; }
-        .stats-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
-        
-        .tab-btn {
-            font-size: 1.125rem !important;
-            min-height: 52px;
-            padding: 16px 12px;
-        }
-        
-        .quick-buttons-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-        
-        .date-selector-container {
-            background: white;
-            padding: 1.25rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-            margin-bottom: 3rem;
-            width: 100%;
-        }
-        .date-selector-container label {
-            font-size: 1rem; /* 16px / 16 */
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 0.75rem;
-            display: block;
-        }
-        
-        * { max-width: 100%; }
-        .grid { width: 100%; }
-        .overflow-x-auto { width: 100%; overflow-x: auto; }
+      html { font-size: 28px; }
+      body { font-size: 1rem; background: #f8fafc; overflow-x: hidden; }
+      #main-content { padding: 0.5rem; }
+      .tab-content { padding: 0.75rem; }
 
-
-
-    }
-    
-    /* --- 桌面版樣式 --- */
-    @media (min-width: 769px) {
-        .container { width: 100%; margin: 0; padding: 0; }
-        .tab-content { padding: 1.5rem; display: none; }          
-        .mobile-table-redesign { display: none !important; }
-        .desktop-table { display: block !important; }
-        
-        .mobile-header {
-            background: none; color: inherit; padding: 0; border-radius: 0;
-            margin: 0; box-shadow: none; width: auto;
-        }
-        .mobile-header h1 { color: #1e293b; }
-        
-        .stats-grid { grid-template-columns: repeat(3, 1fr); }
-        .quick-buttons-container { grid-template-columns: repeat(3, 1fr); }
-
-        .date-selector-container {
-            margin-bottom: 2rem; /* 增加日期選擇器與下方卡片的間距 (rem = 32px) */
-        }        
-    }
-    
-    /* --- 其他樣式 --- */
-    .touch-feedback:active { transform: scale(0.96); opacity: 0.8; }
-    
-    .attendee-mobile-card {
-        background: white;
-        border-radius: 1rem;
-        padding: 1rem;
-        margin-bottom: 0.75rem;
-        box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-        border-left: 4px solid #3b82f6;
-        width: 100%;
-    }
-    .attendee-mobile-card h4 {
-        font-size: 1.375rem !important; 
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 0.75rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .attendee-list {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.5rem;
-        font-size: 1.25rem !important;
-    }
-    .attendee-item {
-        padding: 0.5rem;
-        background: #f8fafc;
-        border-radius: 0.5rem;
-        font-weight: 500;
-    }
-    .attendee-item.new-friend { background: #dbeafe; color: #1d4ed8; }
-    
-    .chart-container { width: 100%; position: relative; }
-    .chart-container canvas { width: 100% !important; height: auto !important; }
-    
-    html, body {
-        width: 100vw !important; max-width: 100vw !important;
-        margin: 0 !important; padding: 0 !important;
-        overflow-x: hidden !important;
-    }
-    .container, #main-content {
-        width: 100vw !important; max-width: 100vw !important;
-        margin: 0 !important; padding: 0 !important;
-    }
-    .tab-content { width: 100%; padding: 1rem; box-sizing: border-box; }
-    @media (max-width: 768px) { .tab-content { padding: 0.75rem; } }
-    @media (min-width: 769px) { .tab-content { padding: 1.5rem; } }
-    
-    * { box-sizing: border-box; }
-    .stats-grid, .quick-buttons-container, .mobile-header {
-        width: 100%; margin-left: 0; margin-right: 0;
-    }
-    
-    .chart-container {
+      .mobile-header {
+        background: linear-gradient(135deg, #1e1b4b, #312e81, #4c1d95);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0 0 1.5rem 1.5rem;
+        margin: 0 0 1.5rem 0;
+        box-shadow: 0 8px 24px rgb(139 92 246 / 0.3);
         width: 100%;
         position: relative;
-        overflow: visible;
-        margin: 1rem 0;
-    }
-    @media (max-width: 768px) {
-        .chart-container { padding: 0.5rem; margin: 0.5rem 0; }
-    }
-    
-    .chart-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-    @media (max-width: 768px) {
-        .chart-title { font-size: 1rem; margin-bottom: 0.5rem; }
+        overflow: hidden;
+      }
+      .mobile-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b, #10b981, #06b6d4);
+      }
+      .mobile-header h1 { font-size: 1.5rem; font-weight: 900 !important; margin-bottom: 0.5rem; }
+      .mobile-header p { opacity: 0.85; font-size: 0.875rem !important; }
+
+      .desktop-table { display: none !important; }
+      .mobile-table-redesign { display: block !important; }
+      .stats-grid { grid-template-columns: 1fr !important; }
+      .tab-btn { font-size: 1rem !important; min-height: 52px; padding: 14px 10px; }
+      .quick-buttons-container { grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
     }
 
-    /* 1. 優化桌面版表格標頭 (<th>) */
+    /* ─── 桌面版 ─── */
+    @media (min-width: 769px) {
+      .container { width: 100%; margin: 0; padding: 0; }
+      .tab-content { padding: 1.5rem; }
+      .mobile-table-redesign { display: none !important; }
+      .desktop-table { display: block !important; }
+      .mobile-header { background: none; color: inherit; padding: 0; border-radius: 0; margin: 0; box-shadow: none; width: auto; }
+      .mobile-header h1 { color: #1e293b; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .quick-buttons-container { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* ─── 其他 ─── */
+    .touch-feedback:active { transform: scale(0.96); opacity: 0.85; }
+
+    /* ─── 手機版出席卡片 ─── */
+    .attendee-mobile-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
+      border-left: 4px solid #8b5cf6;
+      width: 100%;
+    }
+    .attendee-mobile-card h4 { font-size: 1.25rem !important; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+    .attendee-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 1.125rem !important; }
+    .attendee-item { padding: 0.5rem; background: #f8fafc; border-radius: 0.5rem; font-weight: 500; }
+    .attendee-item.new-friend { background: linear-gradient(135deg, #f5f3ff, #ede9fe); color: #7c3aed; border: 1px solid #c4b5fd; }
+
+    /* ─── 圖表 ─── */
+    .chart-container { width: 100%; position: relative; }
+    .chart-container canvas { width: 100% !important; height: auto !important; }
+
+    /* ─── 比較卡片左側彩虹邊 ─── */
+    .compare-card {
+      background: white;
+      border-radius: 1.25rem;
+      padding: 1.25rem;
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.06);
+      border: 1px solid #f1f5f9;
+      position: relative;
+      overflow: hidden;
+    }
+    .compare-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 5px;
+      background: linear-gradient(to bottom, #8b5cf6, #ec4899, #f59e0b, #10b981, #06b6d4);
+      border-radius: 4px 0 0 4px;
+    }
+
+    /* ─── 漲跌徽章 ─── */
+    .growth-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+    }
+    .growth-badge.up { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .growth-badge.down { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .growth-badge.neutral { background: #f9fafb; color: #6b7280; border: 1px solid #e5e7eb; }
+
+    /* ─── 表格 ─── */
     .desktop-table th {
-        font-size: 1rem !important; /* 將字體從 text-xs (12px) 提升至 16px */
-        font-weight: 600 !important; /* 加粗字重 (semibold) */
-        color: #1e293b !important; /* 加深文字顏色，提高對比度 */
-        background-color: #f1f5f9 !important; /* 使用更明顯的背景色 */
-        letter-spacing: 0.05em; /* 增加字母間距，更顯專業 */
-        padding-top: 1rem; /* 增加垂直內邊距 */
-        padding-bottom: 1rem;
+      font-size: 1rem !important;
+      font-weight: 700 !important;
+      color: #1e293b !important;
+      background: linear-gradient(135deg, #f5f3ff, #ede9fe) !important;
+      letter-spacing: 0.05em;
+      padding: 1rem 0.875rem;
     }
-
-    /* 2. 加大桌面版表格內文 (<td>) 字體 */
     .desktop-table td {
-        font-size: 1rem !important; /* 將字體從 text-sm (14px) 提升至 16px */
-        padding-top: 0.875rem;
-        padding-bottom: 0.875rem;
+      font-size: 1rem !important;
+      padding: 0.875rem;
+    }
+    .desktop-table tr:hover td { background: #faf5ff; }
+
+    /* ─── 彩虹長條圖 ─── */
+    .chart-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: #1e293b;
     }
 
-    /* 3. 同步優化手機版卡片的標題 (<h3>) */
-    .mobile-stats-card h3 {
-        font-size: 1.5rem !important; /* 加大標題字體 */
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid #e2e8f0; /* 添加底線，使其更像一個區塊標題 */
+    @media (max-width: 768px) {
+      .chart-title { font-size: 1rem; margin-bottom: 0.5rem; }
+      .quick-buttons-container { grid-template-columns: 1fr 1fr; }
     }
-
-    /* 4. 同步加大手機版卡片內的小C名稱 */
-    .mobile-stats-card .mobile-stats-row > span:first-child {
-        font-size: 1.25rem; /* 加大小C名稱的字體 */
-        font-weight: 600; /* 同樣加粗 */
-    }
-
-
-</style>
+  </style>
 </head>
-<body class="text-gray-800">
+<body>
 
   <div id="loading-overlay">
-      <div class="text-center p-6">
-          <div class="loader mx-auto"></div>
-          <p class="mt-4 text-lg font-semibold text-gray-700">正在進行數據分析...</p>
-      </div>
+    <div class="text-center p-6">
+      <div class="loader mx-auto"></div>
+      <p class="mt-4 text-lg font-semibold" style="color:#7c3aed">正在進行數據分析…</p>
+    </div>
   </div>
 
-  <div id="main-content" class="opacity-0 transition-opacity duration-500">
-      <!-- 移動端專用標題區域 -->
-      <header class="mobile-header mb-6">
-          <h1 class="flex items-center">
-              <i class="ph-bold ph-chart-line mr-3"></i>
-              韋宏大C 出席儀表板
-          </h1>
-          <p>即時分析 Coring 會議狀況</p>
-      </header>
+  <div id="main-content" style="opacity:0;transition:opacity 0.5s">
 
-      <!-- 重新設計的導航標籤 -->
-      <nav class="tab-container">
-          <div class="flex">
-              <button id="tab-btn-single" class="tab-btn active touch-feedback">
-                  <i class="ph-bold ph-calendar mr-1"></i>單次會議
+    <!-- Header -->
+    <header class="mobile-header mb-6">
+      <h1 class="flex items-center">
+        <i class="ph-bold ph-chart-line mr-3"></i>
+        韋宏大C 出席儀表板
+      </h1>
+      <p>即時分析 Coring 會議狀況</p>
+    </header>
+
+    <!-- 分頁導航 -->
+    <nav class="tab-container">
+      <div class="flex">
+        <button id="tab-btn-single" class="tab-btn active touch-feedback">
+          <i class="ph-bold ph-calendar mr-1"></i>單次會議
+        </button>
+        <button id="tab-btn-trend" class="tab-btn touch-feedback">
+          <i class="ph-bold ph-trend-up mr-1"></i>趨勢分析
+        </button>
+        <button id="tab-btn-history" class="tab-btn touch-feedback">
+          <i class="ph-bold ph-clock-clockwise mr-1"></i>歷史統計
+        </button>
+      </div>
+    </nav>
+
+    <main>
+      <!-- ════════════════════════════════════════ -->
+      <!-- 分頁1: 單次會議報告 -->
+      <!-- ════════════════════════════════════════ -->
+      <div id="tab-content-single" class="tab-content active">
+
+        <div class="card" style="padding:1.25rem;margin-bottom:1.5rem">
+          <label for="date-selector" style="font-size:0.9375rem;font-weight:600;color:#1e293b;margin-bottom:0.75rem;display:block">
+            <i class="ph-bold ph-calendar-check mr-2"></i>依簽到日期查詢
+          </label>
+          <select id="date-selector" class="mobile-input">
+          </select>
+        </div>
+
+        <section id="summary-cards" class="stats-grid mb-6"></section>
+
+        <section class="mb-6">
+          <!-- 桌面表格 -->
+          <div class="card desktop-table" style="padding:1.5rem">
+            <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;color:#1e293b">
+              <i class="ph-bold ph-list mr-2" style="color:#8b5cf6"></i>各小C出席詳情
+            </h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full">
+                <thead>
+                  <tr>
+                    <th style="text-align:left">小C名稱</th>
+                    <th style="text-align:center">夥伴</th>
+                    <th style="text-align:center">新朋友</th>
+                    <th style="text-align:center">總計</th>
+                  </tr>
+                </thead>
+                <tbody id="details-table"></tbody>
+                <tfoot id="table-footer" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);font-weight:700"></tfoot>
+              </table>
+            </div>
+          </div>
+          <!-- 手機卡片 -->
+          <div class="mobile-table-redesign">
+            <div style="background:white;border-radius:1rem;padding:1.25rem;box-shadow:0 4px 12px rgb(0 0 0 / 0.08);border:1px solid #f1f5f9;margin-bottom:1rem">
+              <h3 style="font-size:1.375rem;font-weight:700;color:#1e293b;margin-bottom:0.75rem;display:flex;align-items:center;border-bottom:2px solid #8b5cf6;padding-bottom:0.75rem">
+                <i class="ph-bold ph-list mr-2" style="color:#8b5cf6"></i>各小C出席詳情
+              </h3>
+              <div id="mobile-details-redesign"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="padding:1.5rem;margin-bottom:1.5rem">
+          <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;color:#1e293b">
+            <i class="ph-bold ph-users mr-2" style="color:#8b5cf6"></i>出席夥伴名單
+          </h2>
+          <div id="name-list-table-container" class="desktop-table overflow-x-auto"></div>
+          <div id="mobile-attendee-cards" class="mobile-table-redesign"></div>
+        </section>
+
+        <section class="card" style="padding:1.5rem">
+          <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;color:#1e293b">
+            <i class="ph-bold ph-chart-bar mr-2" style="color:#8b5cf6"></i>各小C出席分佈
+          </h2>
+          <div class="chart-container">
+            <canvas id="subgroup-bar-chart"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- 分頁2: 期間趨勢分析 -->
+      <!-- ════════════════════════════════════════ -->
+      <div id="tab-content-trend" class="tab-content">
+        <div class="card" style="padding:1.5rem;margin-bottom:1.5rem">
+          <div style="margin-bottom:1.5rem">
+            <label style="font-size:1rem;font-weight:600;color:#1e293b;margin-bottom:0.75rem;display:block">
+              <i class="ph-bold ph-lightning mr-2" style="color:#f59e0b"></i>快速選擇
+            </label>
+            <div class="quick-buttons-container">
+              <button id="quick-this-month" class="quick-btn active touch-feedback">
+                <i class="ph-bold ph-calendar mr-2"></i>本月
               </button>
-              <button id="tab-btn-trend" class="tab-btn touch-feedback">
-                  <i class="ph-bold ph-trend-up mr-1"></i>趨勢分析
+              <button id="quick-last-month" class="quick-btn touch-feedback">
+                <i class="ph-bold ph-calendar-minus mr-2"></i>上個月
               </button>
-              <button id="tab-btn-history" class="tab-btn touch-feedback">
-                  <i class="ph-bold ph-clock-clockwise mr-1"></i>歷史統計
+              <button id="quick-this-quarter" class="quick-btn touch-feedback">
+                <i class="ph-bold ph-calendar-dots mr-2"></i>本季
               </button>
+            </div>
           </div>
-      </nav>
-
-      <main>
-          <!-- 分頁1: 單次會議報告 -->
-          <div id="tab-content-single" class="tab-content active">
-              <!-- 日期選擇器 -->
-              <div class="date-selector-container">
-                  <label for="date-selector">
-                      <i class="ph-bold ph-calendar-check mr-2"></i>依簽到日期查詢
-                  </label>
-                  <select id="date-selector" class="mobile-input w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                  </select>
-              </div>
-
-              <!-- 大幅優化的統計卡片 -->
-              <section id="summary-cards" class="stats-grid grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              </section>
-
-              <!-- 詳細數據區域 -->
-              <section class="grid grid-cols-1 gap-6 mb-6">
-                  <div class="card p-6 desktop-table">
-                      <h2 class="text-xl font-bold mb-4 flex items-center">
-                          <i class="ph-bold ph-list mr-2"></i>各小C出席詳情
-                      </h2>
-                      <div class="overflow-x-auto">
-                          <table class="min-w-full divide-y divide-gray-200">
-                              <thead class="bg-gray-50">
-                                  <tr>
-                                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">小C名稱</th>
-                                      <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">夥伴</th>
-                                      <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">新朋友</th>
-                                      <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">總計</th>
-                                  </tr>
-                              </thead>
-                              <tbody id="details-table" class="bg-white divide-y divide-gray-200">
-                              </tbody>
-                              <tfoot id="table-footer" class="bg-gray-100 font-bold">
-                              </tfoot>
-                          </table>
-                      </div>
-                  </div>
-                  
-                  <div class="mobile-table-redesign">
-                      <div class="mobile-stats-card">
-                          <h3>
-                              <i class="ph-bold ph-list"></i>各小C出席詳情
-                          </h3>
-                          <div id="mobile-details-redesign">
-                          </div>
-                      </div>
-                  </div>
-              </section>
-
-              <section class="card p-6 mb-6">                   
-                  <h2 class="text-xl font-bold mb-4 flex items-center">
-                      <i class="ph-bold ph-users mr-2"></i>出席夥伴名單
-                  </h2>
-                  <div id="name-list-table-container" class="desktop-table overflow-x-auto">
-                  </div>
-                  <div id="mobile-attendee-cards" class="mobile-table-redesign">
-                  </div>
-              </section>
-
-              <section class="card p-6">
-                  <h2 class="text-xl font-bold mb-4 flex items-center">
-                      <i class="ph-bold ph-chart-bar mr-2"></i>各小C出席分佈
-                  </h2>
-                  <div class="chart-container">
-                      <canvas id="subgroup-bar-chart"></canvas>
-                  </div>
-              </section>
+          <div>
+            <label style="font-size:1rem;font-weight:600;color:#1e293b;margin-bottom:0.75rem;display:block">
+              <i class="ph-bold ph-calendar-blank mr-2" style="color:#10b981"></i>或自訂區間
+            </label>
+            <div style="display:grid;gap:0.75rem;margin-bottom:1rem">
+              <input type="date" id="start-date" class="mobile-input">
+              <input type="date" id="end-date" class="mobile-input">
+              <button id="query-range-btn" class="mobile-btn touch-feedback" style="background:linear-gradient(135deg,#059669,#10b981);color:white;font-weight:700;box-shadow:0 4px 12px rgb(16 185 129 / 0.3)">
+                <i class="ph-bold ph-magnifying-glass mr-2"></i>查詢趨勢
+              </button>
+            </div>
           </div>
+        </div>
 
-          <!-- 分頁2: 期間趨勢分析 -->
-          <div id="tab-content-trend" class="tab-content">
-              <!-- 日期選擇區域 -->
-              <div class="card p-6 mb-6">
-                  <div class="space-y-6">
-                      <div>
-                          <label class="block text-lg font-semibold text-gray-700 mb-4">
-                              <i class="ph-bold ph-lightning mr-2"></i>快速選擇
-                          </label>
-                          <div class="quick-buttons-container">
-                              <button id="quick-this-month" class="quick-btn touch-feedback">
-                                  <i class="ph-bold ph-calendar mr-2"></i>本月
-                              </button>
-                              <button id="quick-last-month" class="quick-btn touch-feedback">
-                                  <i class="ph-bold ph-calendar-minus mr-2"></i>上個月
-                              </button>
-                              <button id="quick-this-quarter" class="quick-btn touch-feedback">
-                                  <i class="ph-bold ph-calendar-dots mr-2"></i>本季
-                              </button>
-                          </div>
-                      </div>
-                      <div>
-                          <label class="block text-lg font-semibold text-gray-700 mb-4">
-                              <i class="ph-bold ph-calendar-blank mr-2"></i>或自訂區間
-                          </label>
-                          <div class="space-y-4">
-                              <input type="date" id="start-date" class="mobile-input w-full">
-                              <input type="date" id="end-date" class="mobile-input w-full">
-                              <button id="query-range-btn" class="mobile-btn w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 touch-feedback">
-                                  <i class="ph-bold ph-magnifying-glass mr-2"></i>查詢趨勢
-                              </button>
-                          </div>
-                      </div>
-                  </div>
-              </div>
+        <section id="summary-cards-trend" class="stats-grid mb-6"></section>
+        <section id="trend-stats-display" class="stats-grid mb-6"></section>
 
-              <!-- 趨勢統計卡片 -->
-              <section id="summary-cards-trend" class="stats-grid grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              </section>
-
-              <!-- 趨勢分析統計 -->
-              <section id="trend-stats-display" class="stats-grid grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              </section>
-
-              <!-- 趨勢圖表 -->
-              <section id="trend-charts-container" class="space-y-6">
-                  <div class="card p-6">
-                      <h2 class="text-xl font-bold mb-4">
-                          <i class="ph-bold ph-trend-up mr-2"></i>總出席人數趨勢
-                      </h2>
-                      <div class="chart-container">
-                          <canvas id="total-trend-chart"></canvas>
-                      </div>
-                  </div>
-                  <div class="card p-6">
-                      <h2 class="text-xl font-bold mb-4">
-                          <i class="ph-bold ph-chart-line mr-2"></i>各小C出席趨勢
-                      </h2>
-                      <div class="chart-container">
-                          <canvas id="subgroup-trend-chart"></canvas>
-                      </div>
-                  </div>
-              </section>
+        <section id="trend-charts-container" style="display:grid;gap:1.5rem">
+          <div class="card" style="padding:1.5rem">
+            <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;color:#1e293b">
+              <i class="ph-bold ph-trend-up mr-2" style="color:#ec4899"></i>總出席人數趨勢
+            </h2>
+            <div class="chart-container">
+              <canvas id="total-trend-chart"></canvas>
+            </div>
           </div>
-          
-          <!-- 分頁3: 歷史出席統計 -->
-          <div id="tab-content-history" class="tab-content">
-              <!-- 比較區間選擇 -->
-              <div class="card p-6 mb-6">
-                  <label class="block text-lg font-semibold text-gray-700 mb-4">
-                      <i class="ph-bold ph-chart-bar mr-2"></i>選擇比較區間
-                  </label>
-                  <div id="history-quick-btns" class="quick-buttons-container">
-                      <button data-period="week" class="quick-btn active touch-feedback">週比較</button>
-                      <button data-period="month" class="quick-btn touch-feedback">月比較</button>
-                      <button data-period="quarter" class="quick-btn touch-feedback">季比較</button>
-                      <button data-period="half" class="quick-btn touch-feedback">半年比較</button>
-                      <button data-period="year" class="quick-btn touch-feedback">年比較</button>
-                  </div>
-              </div>
-
-              <!-- 比較統計 -->
-              <section id="comparison-stats" class="stats-grid grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              </section>
-
-              <!-- 比較圖表 -->
-              <section class="card p-6">
-                  <h2 id="comparison-chart-title" class="text-xl font-bold mb-4">
-                      <i class="ph-bold ph-chart-bar mr-2"></i>出席人數趨勢比較
-                  </h2>
-                  <div class="chart-container">
-                      <canvas id="comparison-chart"></canvas>
-                  </div>
-              </section>
+          <div class="card" style="padding:1.5rem">
+            <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;color:#1e293b">
+              <i class="ph-bold ph-chart-line mr-2" style="color:#f59e0b"></i>各小C出席趨勢
+            </h2>
+            <div class="chart-container">
+              <canvas id="subgroup-trend-chart"></canvas>
+            </div>
           </div>
-      </main>
+        </section>
+      </div>
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- 分頁3: 歷史統計 -->
+      <!-- ════════════════════════════════════════ -->
+      <div id="tab-content-history" class="tab-content">
+        <div class="card" style="padding:1.5rem;margin-bottom:1.5rem">
+          <label style="font-size:1rem;font-weight:600;color:#1e293b;margin-bottom:0.75rem;display:block">
+            <i class="ph-bold ph-chart-bar mr-2" style="color:#8b5cf6"></i>選擇比較區間
+          </label>
+          <div id="history-quick-btns" class="quick-buttons-container">
+            <button data-period="week" class="quick-btn active touch-feedback">週比較</button>
+            <button data-period="month" class="quick-btn touch-feedback">月比較</button>
+            <button data-period="quarter" class="quick-btn touch-feedback">季比較</button>
+            <button data-period="half" class="quick-btn touch-feedback">半年比較</button>
+            <button data-period="year" class="quick-btn touch-feedback">年比較</button>
+          </div>
+        </div>
+
+        <section id="comparison-stats" class="stats-grid mb-6"></section>
+
+        <section class="card" style="padding:1.5rem">
+          <h2 id="comparison-chart-title" style="font-size:1.25rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;color:#1e293b">
+            <i class="ph-bold ph-chart-bar mr-2" style="color:#8b5cf6"></i>出席人數趨勢比較
+          </h2>
+          <div class="chart-container">
+            <canvas id="comparison-chart"></canvas>
+          </div>
+        </section>
+      </div>
+    </main>
   </div>
 
 <script>
-    // ====== GAS API 設定 — 部署後替換成你的 GAS Web App URL ======
-    const GAS_API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
-
-    // ====== GAS 跨網域呼叫 helper ======
-    async function callGAS(functionName, ...params) {
-        const response = await fetch(GAS_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ functionName, parameters: params }),
-            mode: 'no-cors'  // GAS 不回應 CORS preflight，use no-cors
-        });
-        // no-cors 模式回應是 opaque — 我們依賴 GAS 的直接回傳（若失敗會進 catch）
-        return null; // 實際回應由 GAS 的 htmlOutput 處理，見下方說明
-    }
-
-    // ====== 使用 DO_GET 回傳 JSON 的 GAS 呼叫 ======
-    // 由於 GAS web app 的 exec URL 不支援 JSON response（含 CORS 限制），
-    // 需要改用 ?alternative=1 參數或包裝成 ScriptDiv.setScriptOutput。
-    // 這裡示範用 PUBLIC GAS URL 方式（建議改用 gas-wrapper.php 代理或 GAS ContentService）
-    // 若你希望純前端方案，可改用下方 sample 模式先看 UI。
-    const USE_SAMPLE_DATA = !GAS_API_URL.includes('YOUR_DEPLOYMENT_ID');
-
-    async function gasCall(functionName, ...params) {
-        if (USE_SAMPLE_DATA) {
-            return getSampleData(functionName);
-        }
-        // 使用 ContentService 部署的 URL（需在 GAS 中用 ContentService.createTextOutput）
-        const encoded = encodeURIComponent(JSON.stringify({ fn: functionName, params }));
-        const url = GAS_API_URL.replace('/exec', `/exec?data=${encoded}`);
-        try {
-            const resp = await fetch(url);
-            const text = await resp.text();
-            return JSON.parse(text);
-        } catch (e) {
-            console.error('GAS call failed:', e);
-            throw e;
-        }
-    }
-
-    // 範例資料（未設定 GAS URL 時使用）
-    function getSampleData(fn) {
-        const sampleDates = ['2026-04-23','2026-04-17','2026-04-10','2026-04-03','2026-03-27'];
-        const sampleSubgroups = [
-            { name: '秋霞小C', partners: 12, newFriends: 0, total: 12, attendees: [
-                {name:'吳沂錚',type:'partner'},{name:'曹婷玉',type:'partner'},{name:'蔡丞和',type:'partner'},
-                {name:'黃秀清',type:'partner'},{name:'易珍珍',type:'partner'},{name:'吳慧芬',type:'partner'},
-                {name:'饒榮清',type:'partner'},{name:'黃千榕',type:'partner'},{name:'陳妁融',type:'partner'},
-                {name:'邱偉埕',type:'partner'},{name:'林素瑛',type:'partner'},{name:'周言棠',type:'partner'}
-            ]},
-            { name: '秋鳳小C', partners: 9, newFriends: 0, total: 9, attendees: [
-                {name:'姜秋鳳',type:'partner'},{name:'黃柏皓',type:'partner'},{name:'郭惠敏',type:'partner'},
-                {name:'林素瑛',type:'partner'},{name:'陳小芩',type:'partner'},{name:'董華正',type:'partner'},
-                {name:'陳妁融',type:'partner'},{name:'周言棠',type:'partner'},{name:'邱偉埕',type:'partner'}
-            ]},
-            { name: '姍謙小C', partners: 7, newFriends: 0, total: 7, attendees: [
-                {name:'白姍靈',type:'partner'},{name:'廖櫻庭',type:'partner'},{name:'陳姯妙',type:'partner'},
-                {name:'白浩廷',type:'partner'},{name:'白繐綺',type:'partner'},{name:'廖紋君',type:'partner'},
-                {name:'陳裕強',type:'partner'}
-            ]},
-            { name: '華正小C', partners: 4, newFriends: 0, total: 4, attendees: [
-                {name:'董華正',type:'partner'},{name:'温怡珺',type:'partner'},{name:'廖紋君',type:'partner'},
-                {name:'華正',type:'partner'}
-            ]},
-            { name: '昱旻小C', partners: 3, newFriends: 0, total: 3, attendees: [
-                {name:'吳昱旻',type:'partner'},{name:'廖櫻庭',type:'partner'},{name:'周茵茵',type:'partner'}
-            ]},
-            { name: '純惠小C', partners: 2, newFriends: 0, total: 2, attendees: [
-                {name:'黃千榕',type:'partner'},{name:'張志強',type:'partner'}
-            ]},
-        ];
-        const grandTotal = sampleSubgroups.reduce((s,g) => s + g.total, 0);
-        const totalPartners = sampleSubgroups.reduce((s,g) => s + g.partners, 0);
-        const totalNewFriends = sampleSubgroups.reduce((s,g) => s + g.newFriends, 0);
-
-        switch(fn) {
-            case 'getUniqueMeetingDates': return Promise.resolve(sampleDates);
-            case 'getAnalyticsData': return Promise.resolve({ totalPartners, totalNewFriends, grandTotal, subGroupData: sampleSubgroups });
-            case 'getComparisonData': return Promise.resolve({
-                currentPeriod: { grandTotal: 87, totalPartners: 87, totalNewFriends: 0, label: '本期週' },
-                previousPeriod: { grandTotal: 72, totalPartners: 72, totalNewFriends: 0, label: '上期週' },
-                growthRates: { grandTotal: 20.8, partner: 20.8, newFriend: null }
-            });
-            case 'getTrendAnalysisData': return Promise.resolve({
-                totalPartners: 87, totalNewFriends: 0, grandTotal: 87,
-                analysis: { partnerGrowthRate: 12.5, newFriendGrowthRate: null, averageAttendance: 43.5 },
-                trendData: {
-                    labels: ['3/28','4/4','4/11','4/18','4/25'],
-                    datasets: [{ label: '總出席人數', data: [38, 42, 39, 45, 41] }],
-                    subGroupDatasets: [
-                        { label: '秋霞小C', data: [8, 10, 9, 11, 10] },
-                        { label: '秋鳳小C', data: [7, 8, 7, 9, 8] },
-                        { label: '姍謙小C', data: [5, 6, 6, 7, 6] },
-                        { label: '昱旻小C', data: [4, 5, 4, 5, 5] },
-                    ]
-                }
-            });
-            default: return Promise.resolve({});
-        }
-    }
-
-    let subgroupBarChart, totalTrendChart, subgroupTrendChart, comparisonChart;
-    const chartColors = ['#3b82f6', '#ef4444', '#22c55e', '#f97316', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#d946ef'];
-    Chart.register(ChartDataLabels);
-
-    function initHistoryButtons() {
-        const histContainer = document.getElementById('history-quick-btns');
-        histContainer.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
-                for (const child of histContainer.children) {
-                    child.classList.remove('active');
-                }
-                e.target.classList.add('active');
-                fetchComparisonData(e.target.dataset.period);
-            }
-        });
-    }
-
-    function fetchComparisonData(period) {
-        showLoading();
-        gasCall('getComparisonData', period).then(updateComparisonTab).catch(handleError);
-    }
-
-    function updateComparisonTab(data) {
-        console.log("收到比較資料:", data);
-        const container = document.getElementById('comparison-stats');
-
-        const formatRate = (rate) => {
-            if (rate === null || isNaN(rate)) return `<span class="text-gray-500">--</span>`;
-            if (rate === Infinity) return `<span class="text-green-500 font-bold">∞</span>`;
-            const color = rate >= 0 ? 'text-green-500' : 'text-red-500';
-            const icon = rate >= 0 ? '▲' : '▼';
-            return `<span class="${color} font-bold">${icon} ${Math.abs(rate).toFixed(1)}%</span>`;
-        };
-
-        const createCard = (title, current, previous, rate) => `
-            <div class="card p-4">
-                <h3 class="text-base font-semibold text-gray-600 mb-2">${title}</h3>
-                <div class="text-2xl sm:text-3xl font-bold mb-2">${current}</div>
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
-                    <span class="text-xs text-gray-500">${data.previousPeriod.label}: ${previous}</span>
-                    <div class="text-sm">${formatRate(rate)}</div>
-                </div>
-            </div>`;
-
-        container.innerHTML = 
-            createCard('總出席人數', data.currentPeriod.grandTotal, data.previousPeriod.grandTotal, data.growthRates.grandTotal) +
-            createCard('夥伴人數', data.currentPeriod.totalPartners, data.previousPeriod.totalPartners, data.growthRates.partner) +
-            createCard('新朋友人數', data.currentPeriod.totalNewFriends, data.previousPeriod.totalNewFriends, data.growthRates.newFriend);
-
-        document.getElementById('comparison-chart-title').textContent = `${data.currentPeriod.label} vs ${data.previousPeriod.label} 出席人數比較`;
-        
-        renderComparisonChart(data);
-        hideLoading();
-    }
-    
-    function renderComparisonChart(data) {
-        if (comparisonChart) comparisonChart.destroy();
-        
-        const ctx = document.getElementById('comparison-chart').getContext('2d');
-        const isMobile = window.innerWidth < 768;
-        
-        comparisonChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['總人數', '夥伴', '新朋友'],
-                datasets: [
-                    {
-                        label: data.previousPeriod.label,
-                        data: [data.previousPeriod.grandTotal, data.previousPeriod.totalPartners, data.previousPeriod.totalNewFriends],
-                        backgroundColor: '#9ca3af',
-                        borderColor: '#6b7280',
-                        borderWidth: 1
-                    },
-                    {
-                        label: data.currentPeriod.label,
-                        data: [data.currentPeriod.grandTotal, data.currentPeriod.totalPartners, data.currentPeriod.totalNewFriends],
-                        backgroundColor: '#3b82f6',
-                        borderColor: '#2563eb',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { 
-                        position: 'top',
-                        labels: {
-                            font: { size: isMobile ? 11 : 13 },
-                            padding: isMobile ? 10 : 15
-                        }
-                    },
-                    datalabels: {
-                        anchor: 'end',
-                        align: 'end',
-                        color: '#374151',
-                        font: {
-                            weight: 'bold',
-                            size: isMobile ? 10 : 12
-                        }
-                    }
-                },
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        ticks: { font: { size: isMobile ? 10 : 12 } }
-                    },
-                    x: {
-                        ticks: { font: { size: isMobile ? 10 : 12 } }
-                    }
-                }
-            }
-        });
-    }
-
-    function initQuickButtons() {
-        const quickButtons = ['quick-this-month', 'quick-last-month', 'quick-this-quarter'];
-        quickButtons.forEach(btnId => {
-            const btn = document.getElementById(btnId);
-            if (btn) {
-                btn.addEventListener('click', (e) => {
-                    quickButtons.forEach(id => {
-                        const button = document.getElementById(id);
-                        if (button) button.classList.remove('active');
-                    });
-                    e.currentTarget.classList.add('active');
-                });
-            }
-        });
-
-        document.getElementById('quick-this-month').addEventListener('click', () => setDateRangeAndQuery('thisMonth'));
-        document.getElementById('quick-last-month').addEventListener('click', () => setDateRangeAndQuery('lastMonth'));
-        document.getElementById('quick-this-quarter').addEventListener('click', () => setDateRangeAndQuery('thisQuarter'));
-    }
-
-    function setDateRangeAndQuery(period) {
-        const today = new Date();
-        let startDate, endDate;
-        const year = today.getFullYear();
-        const month = today.getMonth();
-
-        switch(period) {
-            case 'thisMonth':
-                startDate = new Date(year, month, 1);
-                endDate = new Date(year, month + 1, 0);
-                break;
-            case 'lastMonth':
-                startDate = new Date(year, month - 1, 1);
-                endDate = new Date(year, month, 0);
-                break;
-            case 'thisQuarter':
-                const quarter = Math.floor(month / 3);
-                startDate = new Date(year, quarter * 3, 1);
-                endDate = new Date(year, quarter * 3 + 3, 0);
-                break;
-        }
-
-        document.getElementById('start-date').value = formatDateForInput(startDate);
-        document.getElementById('end-date').value = formatDateForInput(endDate);
-        queryTrendData(period.includes('Month'));
-    }
-
-    function populateDateSelector(dates) {
-        const selector = document.getElementById('date-selector');
-        if (!dates || dates.length === 0) {
-            selector.innerHTML = '<option>找不到資料</option>';
-            handleError({message: '工作表中無有效簽到日期。'});
-            return;
-        }
-
-        const sortedDates = dates.sort((a, b) => new Date(b) - new Date(a));
-        
-        selector.innerHTML = sortedDates.map(date => 
-            `<option value="${date}">${formatDateForDisplay(date)}</option>`
-        ).join('');
-
-        const today = new Date();
-        const monthAgo = new Date();
-        monthAgo.setDate(today.getDate() - 29);
-        
-        document.getElementById('end-date').value = formatDateForInput(today);
-        document.getElementById('start-date').value = formatDateForInput(monthAgo);
-        
-        fetchDataForDate(selector.value, true);
-    }
-
-    function fetchDataForDate(date, isInitial = false) {
-        if (!date) {
-            hideLoading();
-            return;
-        }
-        showLoading();
-        gasCall('getAnalyticsData', date, isInitial).then(data => updateDashboard(data, 'single')).catch(handleError);
-    }
-
-    function queryTrendData(isQuickSelect) {
-        const startDate = document.getElementById('start-date').value;
-        const endDate = document.getElementById('end-date').value;
-
-        if (!startDate || !endDate) {
-            alert('請選擇開始和結束日期。');
-            return;
-        }
-
-        if (new Date(startDate) > new Date(endDate)) {
-            alert('開始日期不能晚於結束日期。');
-            return;
-        }
-
-        showLoading();
-        gasCall('getTrendAnalysisData', startDate, endDate, isQuickSelect).then(data => updateDashboard(data, 'trend')).catch(handleError);
-    }
-
-    function updateDashboard(data, type) {
-        console.log(`收到 ${type} 類型資料:`, data);
-        updateSummaryCards(data, type);
-
-        if (type === 'single') {
-            updateDetailsTable(data);
-            updateMobileDetailsCards(data);
-            renderSingleWeekCharts(data.subGroupData);
-            renderAttendeeTable(data.subGroupData);
-        } else if (type === 'trend') {
-            updateTrendStats(data.analysis);
-            renderTrendCharts(data.trendData);
-        }
-
-        hideLoading();
-    }
-
-    function addTouchFeedback() {
-        document.addEventListener('touchstart', (e) => {
-            if (e.target.classList.contains('touch-feedback')) {
-                e.target.style.transform = 'scale(0.98)';
-                e.target.style.opacity = '0.8';
-            }
-        });
-
-        document.addEventListener('touchend', (e) => {
-            if (e.target.classList.contains('touch-feedback')) {
-                setTimeout(() => {
-                    e.target.style.transform = '';
-                    e.target.style.opacity = '';
-                }, 150);
-            }
-        });
-    }
-
-    function optimizeChartsForDevice() {
-        const isMobile = window.innerWidth < 768;
-        const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-        
-        Chart.defaults.font.size = isMobile ? 10 : isTablet ? 11 : 12;
-        Chart.defaults.elements.point.radius = isMobile ? 2 : 3;
-        Chart.defaults.elements.line.borderWidth = isMobile ? 2 : 3;
-    }
-
-    window.addEventListener('load', optimizeChartsForDevice);
-    window.addEventListener('resize', debounce(optimizeChartsForDevice, 300));
-
-    function initTabs() {
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const targetTab = button.id.replace('tab-btn-', '');
-                
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-                
-                button.classList.add('active');
-                document.getElementById(`tab-content-${targetTab}`).classList.add('active');
-            });
-        });
-    }
-
-    function updateSummaryCards(data, type) {
-        const containerId = type === 'single' ? 'summary-cards' : 'summary-cards-trend';
-        const prefix = type === 'trend' ? '區間總' : '';
-        
-        const container = document.getElementById(containerId);
-        if (!container) return;
-
-        container.innerHTML = `
-            <div class="stat-card">
-                <h2 class="text-sm font-semibold text-gray-500 flex items-center mb-2"><i class="ph-bold ph-users mr-2"></i>${prefix}夥伴數</h2>
-                <p class="number">${data.totalPartners}</p>
-            </div>
-            <div class="stat-card">
-                <h2 class="text-sm font-semibold text-gray-500 flex items-center mb-2"><i class="ph-bold ph-user-plus mr-2"></i>${prefix}新朋友數</h2>
-                <p class="number">${data.totalNewFriends}</p>
-            </div>
-            <div class="stat-card primary">
-                <h2 class="text-sm font-semibold flex items-center mb-2"><i class="ph-bold ph-users-four mr-2"></i>${prefix}出席數</h2>
-                <p class="number">${data.grandTotal}</p>
-            </div>
-        `;
-    }
-
-    function updateDetailsTable(data) {
-        const tableBody = document.getElementById('details-table');
-        const tableFooter = document.getElementById('table-footer');
-
-        if (data.subGroupData && data.subGroupData.length > 0) {
-            tableBody.innerHTML = data.subGroupData.map(group => {
-              const displayName = group.name.length > 8 ? group.name.substring(0, 8) + '...' : group.name;
-              return `
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3 font-medium text-sm" title="${group.name}">${displayName}</td>
-                    <td class="px-4 py-3 text-center text-sm">${group.partners}</td>
-                    <td class="px-4 py-3 text-center text-sm">${group.newFriends}</td>
-                    <td class="px-4 py-3 text-center font-bold text-sm">${group.total}</td>
-                </tr>
-              `;
-            }).join('');
-        } else {
-            tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500 text-sm">此範圍無任何出席紀錄</td></tr>`;
-        }
-
-        tableFooter.innerHTML = `
-            <tr>
-                <td class="px-4 py-3 text-left text-sm font-bold">合計</td>
-                <td class="px-4 py-3 text-center text-sm font-bold">${data.totalPartners}</td>
-                <td class="px-4 py-3 text-center text-sm font-bold">${data.totalNewFriends}</td>
-                <td class="px-4 py-3 text-center text-sm font-bold">${data.grandTotal}</td>
-            </tr>
-        `;
-    }
-
-    function updateMobileDetailsCards(data) {
-        const container = document.getElementById('mobile-details-redesign');
-        
-        if (data.subGroupData && data.subGroupData.length > 0) {
-            container.innerHTML = data.subGroupData.map(group => `
-                <div class="mobile-stats-row">
-                    <span class="font-medium">${group.name}</span>
-                    <div class="text-right">
-                        <div class="font-bold text-lg">${group.total}</div>
-                        <div class="text-base text-gray-500">夥伴:${group.partners} 新朋友:${group.newFriends}</div>
-                    </div>
-                </div>
-            `).join('') + `
-                <div class="mobile-stats-row">
-                    <span class="font-bold">總計</span>
-                    <div class="text-right">
-                        <div class="font-bold text-xl text-blue-600">${data.grandTotal}</div>
-                        <div class="text-sm text-gray-600">夥伴:${data.totalPartners} 新朋友:${data.totalNewFriends}</div>
-                    </div>
-                </div>
-            `;
-        } else {
-            container.innerHTML = `<div class="text-center text-gray-500 py-4">此範圍無任何出席紀錄</div>`;
-        }
-    }
-
-    function renderSingleWeekCharts(subGroupData) {
-        if (subgroupBarChart) {
-            subgroupBarChart.destroy();
-        }
-
-        const ctx = document.getElementById('subgroup-bar-chart').getContext('2d');
-        const chartContainer = ctx.canvas.parentNode;
-        const isMobile = window.innerWidth < 768;
-
-        const sortedData = [...subGroupData].sort((a, b) => a.total - b.total);
-
-        const processedData = sortedData.map(group => ({
-            ...group,
-            displayName: group.name.length > 8 
-                ? group.name.substring(0, 8) + '...'
-                : group.name,
-            originalName: group.name
-        }));
-
-        if (processedData && processedData.length > 0) {
-            const heightPerBar = isMobile ? 45 : 50;
-            const baseHeight = 120;
-            const newHeight = (processedData.length * heightPerBar) + baseHeight;
-            chartContainer.style.height = `${Math.max(newHeight, 250)}px`;
-        } else {
-            chartContainer.style.height = '200px';
-        }
-        
-        subgroupBarChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: processedData.map(group => group.displayName),
-                datasets: [
-                    {
-                        label: '夥伴',
-                        data: processedData.map(group => group.partners),
-                        backgroundColor: '#3b82f6'
-                    },
-                    {
-                        label: '新朋友',
-                        data: processedData.map(group => group.newFriends),
-                        backgroundColor: '#a5b4fc'
-                    }
-                ]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                layout: {
-                    padding: {
-                        left: isMobile ? 10 : 20,
-                        right: isMobile ? 30 : 50,
-                        top: 15,
-                        bottom: 15
-                    }
-                },
-                scales: {
-                    x: { 
-                        stacked: true,
-                        ticks: { font: { size: isMobile ? 11 : 13 } },
-                        grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' }
-                    },
-                    y: { 
-                        stacked: true,
-                        ticks: {
-                            font: { size: isMobile ? 12 : 14, weight: '500' },
-                        },
-                        grid: { display: false }
-                    }
-                },
-                plugins: {
-                    legend: { 
-                        position: 'bottom',
-                        labels: {
-                            font: { size: isMobile ? 12 : 14 },
-                            padding: 20,
-                            usePointStyle: true,
-                            pointStyle: 'rect'
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            title: (tooltipItems) => processedData[tooltipItems[0].dataIndex]?.originalName || tooltipItems[0].label,
-                            label: (context) => `${context.dataset.label}: ${context.parsed.x}`
-                        }
-                    },
-                    datalabels: {
-                        color: '#ffffff',
-                        font: { weight: 'bold', size: isMobile ? 11 : 14 },
-                        anchor: 'center',
-                        align: 'center',
-                        formatter: (value) => (value > 0 ? value : null),
-                        display: (context) => context.parsed && context.parsed.x > 0,
-                        textShadowColor: 'rgba(0, 0, 0, 0.5)',
-                        textShadowBlur: 2
-                    }
-                },
-                animation: {
-                    duration: 800,
-                    easing: 'easeInOutQuart'
-                }
-            }
-        });
-    }
-
-    function renderAttendeeTable(subGroupData) {
-        const desktopContainer = document.getElementById('name-list-table-container');
-        const mobileContainer = document.getElementById('mobile-attendee-cards');
-        
-        if (!subGroupData || subGroupData.length === 0) {
-            desktopContainer.innerHTML = '<p class="text-gray-500 text-center py-4">無出席夥伴名單可顯示。</p>';
-            mobileContainer.innerHTML = '<p class="text-gray-500 text-center py-4">無出席夥伴名單可顯示。</p>';
-            return;
-        }
-
-        const groupsWithAttendees = subGroupData.filter(group => group.attendees && group.attendees.length > 0);
-        
-        if (groupsWithAttendees.length === 0) {
-            desktopContainer.innerHTML = '<p class="text-gray-500 text-center py-4">無出席夥伴名單可顯示。</p>';
-            mobileContainer.innerHTML = '<p class="text-gray-500 text-center py-4">無出席夥伴名單可顯示。</p>';
-            return;
-        }
-
-        const maxRows = Math.max(...groupsWithAttendees.map(group => group.attendees.length));
-        let tableHTML = `<table class="min-w-full text-base"><thead class="bg-gray-50"><tr>`;
-        tableHTML += `<th class="p-2 text-left text-base font-medium text-gray-500 uppercase w-12">項次</th>`;
-        
-        subGroupData.forEach(group => {
-            const displayName = group.name.length > 8 ? group.name.substring(0, 8) + '...' : group.name;
-            tableHTML += `<th class="p-2 border-l text-base font-medium text-gray-500 uppercase" title="${group.name}">${displayName}</th>`;
-        });
-        
-        tableHTML += '</tr></thead><tbody>';
-
-        for (let i = 0; i < maxRows; i++) {
-            tableHTML += `<tr class="border-b hover:bg-gray-50">`;
-            tableHTML += `<td class="p-2 border-r font-medium text-center text-base">${i + 1}</td>`;
-            
-            subGroupData.forEach(group => {
-                const attendee = group.attendees[i];
-                tableHTML += '<td class="p-2 border-l align-top text-base">';
-                if (attendee) {
-                    const textColor = attendee.type === 'friend' ? 'text-blue-600' : 'text-gray-800';
-                    tableHTML += `<div class="${textColor} font-medium">${attendee.name}</div>`;
-                }
-                tableHTML += '</td>';
-            });
-            
-            tableHTML += '</tr>';
-        }
-
-        tableHTML += '</tbody></table>';
-        desktopContainer.innerHTML = tableHTML;
-
-        mobileContainer.innerHTML = groupsWithAttendees.map(group => {
-            const displayName = group.name.length > 8 ? group.name.substring(0, 8) + '...' : group.name;
-            return `
-                <div class="attendee-mobile-card">
-                    <h4 title="${group.name}"><i class="ph-bold ph-users"></i>${displayName} (${group.attendees.length}人)</h4>
-                    <div class="attendee-list">
-                        ${group.attendees.map(attendee => `
-                            <div class="attendee-item ${attendee.type === 'friend' ? 'new-friend' : ''}">${attendee.name}</div>
-                        `).join('')}
-                    </div>
-                </div>
-            `
-        }).join('');
-    }
-
-    function updateTrendStats(analysis) {
-        const container = document.getElementById('trend-stats-display');
-        if (!analysis) {
-            container.innerHTML = '';
-            return;
-        }
-
-        const formatRate = (rate) => {
-            if (rate === null || isNaN(rate)) return '<span class="text-gray-500">N/A</span>';
-            if (rate === Infinity) return '<span class="text-green-500">∞</span>';
-            const color = rate >= 0 ? 'text-green-500' : 'text-red-500';
-            const icon = rate >= 0 ? '▲' : '▼';
-            return `<span class="${color} font-bold">${icon} ${Math.abs(rate).toFixed(1)}%</span>`;
-        };
-
-        container.innerHTML = `
-            <div class="stat-card">
-                <h3 class="text-sm font-semibold text-gray-500 mb-2">夥伴人數月成長</h3>
-                <p class="number">${formatRate(analysis.partnerGrowthRate)}</p>
-            </div>
-            <div class="stat-card">
-                <h3 class="text-sm font-semibold text-gray-500 mb-2">新朋友數月成長</h3>
-                <p class="number">${formatRate(analysis.newFriendGrowthRate)}</p>
-            </div>
-            <div class="stat-card">
-                <h3 class="text-sm font-semibold text-gray-500 mb-2">期間每週平均人數</h3>
-                <p class="number">${analysis.averageAttendance.toFixed(1)}</p>
-            </div>
-        `;
-    }
-
-    function renderTrendCharts(trendData) {
-        const isMobile = window.innerWidth < 768;
-        
-        if (totalTrendChart) totalTrendChart.destroy();
-        const totalCtx = document.getElementById('total-trend-chart').getContext('2d');
-        
-        totalTrendChart = new Chart(totalCtx, {
-            type: 'line',
-            data: {
-                labels: trendData.labels,
-                datasets: trendData.datasets.map((dataset, index) => ({
-                    ...dataset,
-                    borderColor: chartColors[index],
-                    backgroundColor: chartColors[index] + '20',
-                    tension: 0.1
-                }))
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top' },
-                    datalabels: { display: false }
-                },
-                scales: {
-                    x: { ticks: { font: { size: isMobile ? 12 : 14 } } },
-                    y: { beginAtZero: true, ticks: { font: { size: isMobile ? 12 : 14 } } }
-                }
-            }
-        });
-
-        if (subgroupTrendChart) subgroupTrendChart.destroy();
-        const subgroupCtx = document.getElementById('subgroup-trend-chart').getContext('2d');
-        
-        subgroupTrendChart = new Chart(subgroupCtx, {
-            type: 'line',
-            data: {
-                labels: trendData.labels,
-                datasets: trendData.subGroupDatasets.map((dataset, index) => ({
-                    ...dataset,
-                    borderColor: chartColors[index % chartColors.length],
-                    backgroundColor: chartColors[index % chartColors.length] + '20',
-                    tension: 0.1
-                }))
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top' },
-                    datalabels: { display: false }
-                },
-                scales: {
-                    x: { ticks: { font: { size: isMobile ? 9 : 11 } } },
-                    y: { beginAtZero: true, ticks: { font: { size: isMobile ? 9 : 11 } } }
-                }
-            }
-        });
-    }
-
-    function showLoading() {
-        document.getElementById('loading-overlay').style.display = 'flex';
-        document.getElementById('main-content').style.opacity = '0';
-    }
-
-    function hideLoading() {
-        document.getElementById('loading-overlay').style.display = 'none';
-        document.getElementById('main-content').style.opacity = '1';
-    }
-
-    function handleError(error) {
-        console.error('GAS Error:', error);
-        const errorMsg = error.message || '未知錯誤';
-        alert('發生錯誤: ' + errorMsg);
-        hideLoading();
-    }
-
-    function formatDateForDisplay(dateString) {
-        try {
-            const date = new Date(dateString.replace(/-/g, '/'));
-            if (isNaN(date.getTime())) return '無效日期';
-            return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
-        } catch (error) {
-            return '無效日期';
-        }
-    }
-
-    function formatDateForInput(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        initTabs();
-        initHistoryButtons();
-        initQuickButtons();
-        addTouchFeedback();
-        
-        gasCall('getUniqueMeetingDates').then(populateDateSelector).catch(handleError);
-        
-        document.getElementById('date-selector').addEventListener('change', e => fetchDataForDate(e.target.value, false));
-        document.getElementById('query-range-btn').addEventListener('click', () => queryTrendData(false));
-        
-        setTimeout(() => {
-            fetchComparisonData('week');
-        }, 500);
+  let subgroupBarChart, totalTrendChart, subgroupTrendChart, comparisonChart;
+  // 彩虹十色
+  const RAINBOW = [
+    ['#8b5cf6','#c084fc'], ['#ec4899','#f9a8d4'], ['#f59e0b','#fcd34d'],
+    ['#10b981','#6ee7b7'], ['#06b6d4','#67e8f9'], ['#f97316','#fdba74'],
+    ['#6366f1','#a5b4fc'], ['#14b8a6','#5eead4'], ['#ef4444','#fca5a5'],
+    ['#84cc16','#bef264'],
+  ];
+  const CHART_COLORS = RAINBOW.flat();
+
+  Chart.register(ChartDataLabels);
+
+  // ─── 分頁初始化 ───
+  function initTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-content-' + btn.id.replace('tab-btn-', '')).classList.add('active');
+      });
     });
+  }
 
-    document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '3') {
-            e.preventDefault();
-            const tabIndex = parseInt(e.key) - 1;
-            const tabs = ['single', 'trend', 'history'];
-            const targetTab = tabs[tabIndex];
-            if (targetTab) {
-                document.getElementById(`tab-btn-${targetTab}`).click();
-            }
-        }
-        
-        if (e.key === 'Escape') {
-            hideLoading();
-        }
+  // ─── 歷史比較 ───
+  function initHistoryButtons() {
+    document.getElementById('history-quick-btns').addEventListener('click', e => {
+      if (e.target.tagName === 'BUTTON') {
+        document.querySelectorAll('#history-quick-btns .quick-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        fetchComparisonData(e.target.dataset.period);
+      }
     });
+  }
 
-    window.addEventListener('online', () => console.log('網路連線已恢復'));
-    window.addEventListener('offline', () => alert('網路連線中斷，部分功能可能無法正常使用。'));
+  function fetchComparisonData(period) {
+    showLoading();
+    google.script.run.withSuccessHandler(updateComparisonTab).withFailureHandler(handleError).getComparisonData(period);
+  }
+
+  function updateComparisonTab(data) {
+    const container = document.getElementById('comparison-stats');
+    const fmt = r => {
+      if (r == null || isNaN(r)) return '<span class="growth-badge neutral">—</span>';
+      const up = r >= 0;
+      return `<span class="growth-badge ${up ? 'up' : 'down'}">${up ? '▲' : '▼'} ${Math.abs(r).toFixed(1)}%</span>`;
+    };
+    const mk = (title, cur, prev, rate, accent) => `
+      <div class="compare-card" style="padding:1.25rem">
+        <p style="font-size:0.8125rem;color:#64748b;margin-bottom:0.5rem;font-weight:600">${title}</p>
+        <p style="font-size:2rem;font-weight:800;background:linear-gradient(135deg,#1e293b,#0f172a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.25rem">${cur}</p>
+        <p style="font-size:0.75rem;color:#94a3b8;margin-bottom:0.5rem">${data.previousPeriod.label}: ${prev}</p>
+        ${fmt(rate)}
+      </div>`;
+    container.innerHTML =
+      mk('總出席人數', data.currentPeriod.grandTotal, data.previousPeriod.grandTotal, data.growthRates.grandTotal, '#8b5cf6') +
+      mk('夥伴人數', data.currentPeriod.totalPartners, data.previousPeriod.totalPartners, data.growthRates.partner, '#10b981') +
+      mk('新朋友人數', data.currentPeriod.totalNewFriends, data.previousPeriod.totalNewFriends, data.growthRates.newFriend, '#ec4899');
+    document.getElementById('comparison-chart-title').innerHTML = `<i class="ph-bold ph-chart-bar mr-2" style="color:#8b5cf6"></i>${data.currentPeriod.label} vs ${data.previousPeriod.label} 出席人數比較`;
+    renderComparisonChart(data);
+    hideLoading();
+  }
+
+  function renderComparisonChart(data) {
+    if (comparisonChart) comparisonChart.destroy();
+    const ctx = document.getElementById('comparison-chart').getContext('2d');
+    comparisonChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['總人數', '夥伴', '新朋友'],
+        datasets: [
+          { label: data.previousPeriod.label, data: [data.previousPeriod.grandTotal, data.previousPeriod.totalPartners, data.previousPeriod.totalNewFriends], backgroundColor: '#d1d5db', borderColor: '#9ca3af', borderWidth: 1 },
+          { label: data.currentPeriod.label, data: [data.currentPeriod.grandTotal, data.currentPeriod.totalPartners, data.currentPeriod.totalNewFriends], backgroundColor: '#8b5cf6', borderColor: '#7c3aed', borderWidth: 1 },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { padding: 16, usePointStyle: true, pointStyle: 'rect' } },
+          datalabels: { anchor: 'end', align: 'end', color: '#374151', font: { weight: 'bold', size: 11 } },
+        },
+        scales: { y: { beginAtZero: true, ticks: { font: { size: 11 } } }, x: { ticks: { font: { size: 11 } } } },
+      },
+    });
+  }
+
+  // ─── 快速按鈕 ───
+  function initQuickButtons() {
+    const btns = ['quick-this-month','quick-last-month','quick-this-quarter'];
+    btns.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('click', () => {
+        btns.forEach(b => document.getElementById(b)?.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+      });
+    });
+    document.getElementById('quick-this-month').addEventListener('click', () => setDateRangeAndQuery('thisMonth'));
+    document.getElementById('quick-last-month').addEventListener('click', () => setDateRangeAndQuery('lastMonth'));
+    document.getElementById('quick-this-quarter').addEventListener('click', () => setDateRangeAndQuery('thisQuarter'));
+  }
+
+  function setDateRangeAndQuery(period) {
+    const today = new Date();
+    let s, e, y = today.getFullYear(), m = today.getMonth();
+    if (period === 'thisMonth') { s = new Date(y,m,1); e = new Date(y,m+1,0); }
+    else if (period === 'lastMonth') { s = new Date(y,m-1,1); e = new Date(y,m,0); }
+    else { const q = Math.floor(m/3); s = new Date(y,q*3,1); e = new Date(y,q*3+3,0); }
+    document.getElementById('start-date').value = fmtIn(s);
+    document.getElementById('end-date').value = fmtIn(today);
+    queryTrendData(true);
+  }
+
+  // ─── 日期選擇 ───
+  function populateDateSelector(dates) {
+    const sel = document.getElementById('date-selector');
+    if (!dates || !dates.length) { sel.innerHTML = '<option>找不到資料</option>'; handleError({message:'無有效日期'}); return; }
+    const sorted = dates.sort((a,b) => new Date(b) - new Date(a));
+    sel.innerHTML = sorted.map(d => `<option value="${d}">${fmtDisp(d)}</option>`).join('');
+    const mo = new Date(); mo.setDate(mo.getDate()-29);
+    document.getElementById('end-date').value = fmtIn(new Date());
+    document.getElementById('start-date').value = fmtIn(mo);
+    fetchDataForDate(sel.value, true);
+  }
+
+  function fetchDataForDate(date, init) {
+    if (!date) { hideLoading(); return; }
+    showLoading();
+    google.script.run.withSuccessHandler(d => updateDashboard(d,'single')).withFailureHandler(handleError).getAnalyticsData(date, init);
+  }
+
+  function queryTrendData(isQuick) {
+    const s = document.getElementById('start-date').value, e = document.getElementById('end-date').value;
+    if (!s || !e) { alert('請選擇開始和結束日期'); return; }
+    if (new Date(s) > new Date(e)) { alert('開始日期不能晚於結束日期'); return; }
+    showLoading();
+    google.script.run.withSuccessHandler(d => updateDashboard(d,'trend')).withFailureHandler(handleError).getTrendAnalysisData(s, e, isQuick);
+  }
+
+  function updateDashboard(data, type) {
+    updateSummaryCards(data, type);
+    if (type === 'single') {
+      updateDetailsTable(data);
+      updateMobileDetailsCards(data);
+      renderSingleWeekCharts(data.subGroupData);
+      renderAttendeeTable(data.subGroupData);
+    } else if (type === 'trend') {
+      updateTrendStats(data.analysis);
+      renderTrendCharts(data.trendData);
+    }
+    hideLoading();
+  }
+
+  // ─── 統計卡 ───
+  function updateSummaryCards(data, type) {
+    const id = type === 'single' ? 'summary-cards' : 'summary-cards-trend';
+    const c = document.getElementById(id);
+    if (!c) return;
+    const mk = (label, value, primary, delay) => `
+      <div class="stat-card ${primary ? 'primary' : ''}" style="animation:fadeIn 0.5s ${delay}ms both">
+        <h2>${label}</h2>
+        <p class="number">${value}</p>
+      </div>`;
+    c.innerHTML = mk('👥 夥伴數', data.totalPartners, false, 0) +
+                  mk('🆕 新朋友數', data.totalNewFriends, false, 80) +
+                  mk('✨ 總出席', data.grandTotal, true, 160);
+  }
+
+  // ─── 詳情表格 ───
+  function updateDetailsTable(data) {
+    const tb = document.getElementById('details-table');
+    const tf = document.getElementById('table-footer');
+    if (!data.subGroupData || !data.subGroupData.length) {
+      tb.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94a3b8">此範圍無出席紀錄</td></tr>';
+    } else {
+      const sorted = [...data.subGroupData].sort((a,b) => b.total - a.total);
+      tb.innerHTML = sorted.map((g,i) => `
+        <tr style="border-bottom:1px solid #f1f5f9">
+          <td style="padding:0.875rem;font-weight:600;color:#1e293b">${g.name}</td>
+          <td style="padding:0.875rem;text-align:center">${g.partners}</td>
+          <td style="padding:0.875rem;text-align:center;color:#7c3aed;font-weight:600">${g.newFriends}</td>
+          <td style="padding:0.875rem;text-align:center;font-weight:700;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:0.5rem">${g.total}</td>
+        </tr>`).join('');
+    }
+    tf.innerHTML = `<tr>
+      <td style="padding:0.875rem;font-weight:700">合計</td>
+      <td style="padding:0.875rem;text-align:center;font-weight:700">${data.totalPartners}</td>
+      <td style="padding:0.875rem;text-align:center;font-weight:700;color:#7c3aed">${data.totalNewFriends}</td>
+      <td style="padding:0.875rem;text-align:center;font-weight:800;color:#7c3aed;background:linear-gradient(135deg,#f5f3ff,#ede9fe)">${data.grandTotal}</td>
+    </tr>`;
+  }
+
+  function updateMobileDetailsCards(data) {
+    const c = document.getElementById('mobile-details-redesign');
+    if (!data.subGroupData || !data.subGroupData.length) { c.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem">無出席紀錄</p>'; return; }
+    c.innerHTML = data.subGroupData.map(g => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.875rem 0;border-bottom:1px solid #f1f5f9">
+        <span style="font-weight:600;color:#1e293b;font-size:1.0625rem">${g.name}</span>
+        <div style="text-align:right">
+          <div style="font-size:1.375rem;font-weight:800;background:linear-gradient(135deg,#7c3aed,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${g.total}</div>
+          <div style="font-size:0.875rem;color:#64748b">夥伴:${g.partners} 新朋友:${g.newFriends}</div>
+        </div>
+      </div>`).join('') + `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:0 0 1rem 1rem;margin:0 -1.25rem -1.25rem">
+        <span style="font-weight:700;color:#7c3aed;font-size:1.125rem">總計</span>
+        <div style="text-align:right">
+          <div style="font-size:1.5rem;font-weight:800;color:#7c3aed">${data.grandTotal}</div>
+          <div style="font-size:0.8125rem;color:#64748b">夥伴:${data.totalPartners} 新朋友:${data.totalNewFriends}</div>
+        </div>
+      </div>`;
+  }
+
+  // ─── 彩虹長條圖 ───
+  function renderSingleWeekCharts(subGroupData) {
+    if (subgroupBarChart) subgroupBarChart.destroy();
+    const ctx = document.getElementById('subgroup-bar-chart').getContext('2d');
+    const sorted = [...(subGroupData||[])].sort((a,b) => b.total - a.total);
+    const container = ctx.canvas.parentNode;
+    const isMob = window.innerWidth < 768;
+    container.style.height = Math.max(280, sorted.length * (isMob ? 48 : 52) + 120) + 'px';
+
+    subgroupBarChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: sorted.map(g => g.name.length > 8 ? g.name.slice(0,8)+'…' : g.name),
+        datasets: [
+          { label:'夥伴', data: sorted.map((_,i) => sorted[i].partners), backgroundColor: sorted.map((_,i) => RAINBOW[i % RAINBOW.length][0]) },
+          { label:'新朋友', data: sorted.map((_,i) => sorted[i].newFriends), backgroundColor: sorted.map((_,i) => RAINBOW[i % RAINBOW.length][1]) },
+        ],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { left: isMob ? 10 : 24, right: isMob ? 28 : 48, top: 16, bottom: 16 } },
+        scales: {
+          x: { stacked: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: isMob ? 11 : 13 } } },
+          y: { stacked: true, grid: { display: false }, ticks: { font: { size: isMob ? 12 : 14, weight: '500' } } },
+        },
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true, pointStyle: 'rect', font: { size: isMob ? 12 : 14 } } },
+          tooltip: { callbacks: { title: t => sorted[t[0].dataIndex]?.name || t[0].label } },
+          datalabels: { color: '#fff', font: { weight: 'bold', size: isMob ? 11 : 13 }, anchor: 'center', align: 'center', formatter: v => v > 0 ? v : '' },
+        },
+        animation: { duration: 800, easing: 'easeInOutQuart' },
+      },
+    });
+  }
+
+  // ─── 出席名單 ───
+  function renderAttendeeTable(subGroupData) {
+    const dc = document.getElementById('name-list-table-container');
+    const mc = document.getElementById('mobile-attendee-cards');
+    if (!subGroupData || !subGroupData.length) { dc.innerHTML = mc.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem">無出席夥伴名單</p>'; return; }
+    const groups = subGroupData.filter(g => g.attendees && g.attendees.length);
+    if (!groups.length) { dc.innerHTML = mc.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem">無出席夥伴名單</p>'; return; }
+    const max = Math.max(...groups.map(g => g.attendees.length));
+    let th = '<thead><tr><th style="width:3rem">#</th>';
+    subGroupData.forEach(g => { const n = g.name.length > 8 ? g.name.slice(0,8)+'…' : g.name; th += `<th style="border-left:1px solid #f1f5f9">${n}</th>`; });
+    th += '</tr></thead><tbody>';
+    for (let i = 0; i < max; i++) {
+      th += `<tr style="border-bottom:1px solid #f9fafb">`;
+      th += `<td style="padding:0.75rem;text-align:center;font-weight:600;color:#64748b">${i+1}</td>`;
+      subGroupData.forEach(g => {
+        const a = g.attendees[i];
+        const cls = a ? (a.type === 'friend' ? 'background:linear-gradient(135deg,#f5f3ff,#ede9fe);color:#7c3aed;font-weight:600' : 'color:#1e293b;font-weight:500') : '';
+        th += `<td style="padding:0.75rem;border-left:1px solid #f1f5f9;${cls ? 'background:linear-gradient(135deg,#f5f3ff,#ede9fe);color:#7c3aed;font-weight:600' : ''}">${a ? a.name : ''}</td>`;
+      });
+      th += '</tr>';
+    }
+    th += '</tbody>';
+    dc.innerHTML = `<table class="min-w-full" style="font-size:1rem">${th}</table>`;
+    mc.innerHTML = groups.map(g => `
+      <div class="attendee-mobile-card">
+        <h4>${g.name} (${g.attendees.length}人)</h4>
+        <div class="attendee-list">
+          ${g.attendees.map(a => `<div class="attendee-item${a.type==='friend'?' new-friend':''}">${a.name}</div>`).join('')}
+        </div>
+      </div>`).join('');
+  }
+
+  // ─── 趨勢統計 ───
+  function updateTrendStats(analysis) {
+    const c = document.getElementById('trend-stats-display');
+    if (!analysis) { c.innerHTML = ''; return; }
+    const fmt = r => {
+      if (r == null || isNaN(r)) return '<span class="growth-badge neutral">—</span>';
+      const up = r >= 0;
+      return `<span class="growth-badge ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(r).toFixed(1)}%</span>`;
+    };
+    const mk = (title, val, accent) => `
+      <div class="stat-card" style="padding:1.25rem">
+        <p style="font-size:0.8125rem;color:#64748b;margin-bottom:0.5rem;font-weight:600">${title}</p>
+        <p style="font-size:1.5rem;font-weight:800;margin-bottom:0.5rem">${val}</p>
+      </div>`;
+    c.innerHTML =
+      mk('夥伴月成長', fmt(analysis.partnerGrowthRate)) +
+      mk('新朋友月成長', fmt(analysis.newFriendGrowthRate)) +
+      mk('每週平均', analysis.averageAttendance ? analysis.averageAttendance.toFixed(1) + ' 人' : '—');
+  }
+
+  // ─── 趨勢圖表 ───
+  function renderTrendCharts(trendData) {
+    const isMob = window.innerWidth < 768;
+    if (totalTrendChart) totalTrendChart.destroy();
+    const tCtx = document.getElementById('total-trend-chart').getContext('2d');
+    totalTrendChart = new Chart(tCtx, {
+      type: 'line',
+      data: {
+        labels: trendData.labels,
+        datasets: trendData.datasets.map((d,i) => ({ ...d, borderColor: CHART_COLORS[i%CHART_COLORS.length], backgroundColor: CHART_COLORS[i%CHART_COLORS.length]+'20', tension: 0.3 })),
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'},datalabels:{display:false}}, scales:{x:{ticks:{font:{size:isMob?10:13}}},y:{beginAtZero:true,ticks:{font:{size:isMob?10:13}}}} } },
+    });
+    if (subgroupTrendChart) subgroupTrendChart.destroy();
+    const sCtx = document.getElementById('subgroup-trend-chart').getContext('2d');
+    subgroupTrendChart = new Chart(sCtx, {
+      type: 'line',
+      data: {
+        labels: trendData.labels,
+        datasets: trendData.subGroupDatasets.map((d,i) => ({ ...d, borderColor: CHART_COLORS[i%CHART_COLORS.length], backgroundColor: CHART_COLORS[i%CHART_COLORS.length]+'20', tension: 0.3 })),
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'},datalabels:{display:false}}, scales:{x:{ticks:{font:{size:isMob?9:11}}},y:{beginAtZero:true,ticks:{font:{size:isMob?9:11}}}} } },
+    });
+  }
+
+  // ─── 載入控制 ───
+  function showLoading() {
+    document.getElementById('loading-overlay').style.display = 'flex';
+    document.getElementById('main-content').style.opacity = '0';
+  }
+  function hideLoading() {
+    document.getElementById('loading-overlay').style.display = 'none';
+    document.getElementById('main-content').style.opacity = '1';
+  }
+  function handleError(e) {
+    console.error(e);
+    alert('發生錯誤: ' + (e.message || e));
+    hideLoading();
+  }
+
+  // ─── 格式化 ───
+  function fmtDisp(d) {
+    try { const dt = new Date(d.replace(/-/g,'/')); return dt.getFullYear()+'年'+(dt.getMonth()+1)+'月'+dt.getDate()+'日'; }
+    catch { return d; }
+  }
+  function fmtIn(d) {
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+day;
+  }
+
+  // ─── 鍵盤快捷 ───
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey||e.metaKey) && e.key>='1' && e.key<='3') {
+      e.preventDefault();
+      const map = {1:'single',2:'trend',3:'history'};
+      const t = map[e.key];
+      if (t) document.getElementById('tab-btn-'+t)?.click();
+    }
+    if (e.key === 'Escape') hideLoading();
+  });
+
+  // ─── DOM Ready ───
+  document.addEventListener('DOMContentLoaded', () => {
+    initTabs();
+    initHistoryButtons();
+    initQuickButtons();
+    google.script.run.withSuccessHandler(populateDateSelector).withFailureHandler(handleError).getUniqueMeetingDates();
+    document.getElementById('date-selector').addEventListener('change', e => fetchDataForDate(e.target.value, false));
+    document.getElementById('query-range-btn').addEventListener('click', () => queryTrendData(false));
+    setTimeout(() => fetchComparisonData('week'), 600);
+  });
+
+  // ─── 觸控回饋 ───
+  document.addEventListener('touchstart', e => {
+    if (e.target.classList.contains('touch-feedback')) { e.target.style.transform='scale(0.98)'; e.target.style.opacity='0.85'; }
+  });
+  document.addEventListener('touchend', e => {
+    if (e.target.classList.contains('touch-feedback')) {
+      setTimeout(() => { e.target.style.transform=''; e.target.style.opacity=''; }, 150);
+    }
+  });
 </script>
 </body>
 </html>
